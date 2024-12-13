@@ -159,7 +159,7 @@ public:
         return result;
     }
 
-    Stack operator-(const Stack& other) {
+    Stack operator-() const {
         Stack result;
         Elem* current = head;
         while (current != nullptr) {
@@ -265,6 +265,11 @@ int main() {
     s3.BigDzenga(2, 5);
     std::cout << "(s1 + s2) после BigDzenga(): ";
     s3.print_stack();
+
+    Stack s6 = -s1;
+    std::cout << "Стек -s1: ";
+    s6.print_stack();
+    
 
     s2.pop();
     std::cout << "Стек s2 после pop(): ";
