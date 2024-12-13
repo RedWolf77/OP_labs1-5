@@ -13,102 +13,118 @@ class Elem {
 };
 
 class Stack {
-    private:
-        Elem* head;
-        Elem* tail;
-        int curr_size;
-    public:
-        Stack() : head(nullptr), tail(nullptr), curr_size(0) {}
+private:
+    Elem* head;
 
-        bool is_empty() {
-            if (curr_size == 0) {
+public:
+    Stack() : head(nullptr) {}
+
+    ~Stack() {
+        while (!is_empty()) {
+            pop();
+        }
+    }
+
+    bool is_empty() {
+        return head == nullptr;
+    }
+
+    void push(Elem* elem) {
+        Elem* new_elem = new Elem(nullptr, elem->data);
+        if (is_empty()) {
+            head = new_elem;
+        } else {
+            Elem* current = head;
+            head = elem;
+            current->next = head;
+            head->prev = current;
+        }
+    }
+
+    void pop() {
+        if (is_empty()) {
+            std::cerr << "Стек пуст, невозможно удалить задачу." << std::endl;
+            return;
+        }
+        Elem* to_delete = head;
+        head = head->prev;
+        if (head != nullptr) {
+            head->next = nullptr;
+        }
+        delete to_delete;
+    }
+
+    bool find(std::string a) {
+        Elem* current = head;
+        while (current != nullptr) {
+            if (current->data == a) {
                 return true;
             }
-            return false;
+            current = current->prev;
+        }
+        return false;
+    }
+
+    int weight(std::string a) {
+        int i = 0;
+        Elem* current = head;
+        while (current != nullptr) {
+            if (current->data == a) {
+                return i;
+            }
+            current = current->prev;
+            i++;
+        }
+        return -1;
+    }
+
+    Stack operator+(const Stack& other) {
+        Stack result;
+        Elem* current = head;
+        while (true) {
+            if (current->prev == nullptr) {
+                break;
+            }
+            current = current->prev;
         }
 
-        void push(Elem* elem) {
-            Elem* new_elem = new Elem(nullptr, elem->data);
-            if (is_empty()) {
-                head = new_elem;
-                tail = new_elem;
-            }
-            else if (head == tail) {
-                new_elem->prev = head;
-                head->next = new_elem;
-                tail = new_elem;
-            }
-            else {
-                tail->next = new_elem;
-                new_elem->prev = tail;
-                tail = new_elem;
-            }
-            curr_size += 1;
+        while (current != nullptr) {
+            result.push(new Elem(nullptr, current->data));
+            current = current->next;
         }
 
-        void pop() {
-            if (is_empty()) {
-                std::cerr << "Стек пуст, невозможно удалить задачу." << std::endl;
-                return;
+        current = other.head;
+        while (true) {
+            if (current->prev == nullptr) {
+                break;
             }
-            Elem* current = tail;
-            tail = current->prev;
-            curr_size -= 1;
-            delete current;
+            current = current->prev;
+        }
+        while (current != nullptr) {
+            result.push(new Elem(nullptr, current->data));
+            current = current->next;
         }
 
-        bool find(std::string a) {
-            Elem* current = tail;
-            while (current != nullptr) {
-                if (current->data == a) {
-                    return true;
-                }
-                current = current->prev;
-            }
-            return false;
+        return result;
+    }
+
+    Stack operator*(Stack& other) {
+        Stack result;
+        Elem* current1 = head;
+        Elem* current2 = other.head;
+
+        while (current1->prev != nullptr) {
+            current1 = current1->prev;
+        }
+        while (current2->prev != nullptr) {
+            current2 = current2->prev;
         }
 
-        int weight(std::string a) {
-            int i = 0;
-            Elem* current = tail;
-            while (current != nullptr) {
-                if (current->data == a) {
-                    return i;
-                }
-                current = current->prev;
-                i++;
-            }
-            return -1;
-        }
-
-        int getSize() {
-            return curr_size;
-        }
-
-        Stack operator+(const Stack& other) {
-            Stack result;
-            Elem* current = head;
-            while (current != nullptr) {
-                result.push(new Elem(nullptr, current->data));
-                current = current->next;
-            }
-
-            current = other.head;
-            while (current != nullptr) {
-                result.push(new Elem(nullptr, current->data));
-                current = current->next;
-            }
-            
-            return result;
-        }
-
-        Stack operator*(const Stack& other) {
-            Stack result;
-            Elem* current1 = head;
-            Elem* current2 = other.head;
-
-            if (other.curr_size >= curr_size) {
-                for (int i = 0; i < (other.curr_size - curr_size); i++) {
+        int size1 = size();
+        int size2 = other.size();
+        
+         if (size2 >= size1) {
+                for (int i = 0; i < (size2 - size1); i++) {
                     result.push(new Elem(nullptr, current2->data));
                     current2 = current2->next;
                 }
@@ -124,7 +140,7 @@ class Stack {
                 }
             }
             else {
-                for (int i = 0; i < (curr_size - other.curr_size); i++) {
+                for (int i = 0; i < (size1 - size2); i++) {
                     result.push(new Elem(nullptr, current1->data));
                     current1 = current1->next;
                 }
@@ -140,77 +156,87 @@ class Stack {
                 }
             }
 
-            return result;
+        return result;
+    }
+
+    Stack operator-(const Stack& other) {
+        Stack result;
+        Elem* current = head;
+        while (current != nullptr) {
+            result.push(new Elem(nullptr, current->data));
+            current = current->prev;
+        }
+        return result;
+    }
+
+    int size() {
+        int size = 0;
+        Elem* current = head;
+        while (current != nullptr) {
+            size++;
+            current = current->prev;
+        }
+        return size;
+    }
+
+    void BigDzenga(int i, int j) {
+        if (is_empty()) {
+            return;
+        }
+        int counted_size = size();
+        if (i < 0 || j < 0 || i > j || i >= counted_size || j >= counted_size) {
+            return;
         }
 
-        Stack operator-(const Stack& other) {
-            Stack result;
-            Elem* current = tail;
-            while (current != nullptr) {
-                result.push(new Elem(nullptr, current->data));
-                current = current->next;
-            }
-            return result; 
+        Elem* current = head;
+        for (int k = 0; k < counted_size - j - 1; k++) {
+            current = current->prev;
         }
 
-        void BigDzenga(int i, int j) {
-            if (is_empty()) {
-                return;
-            }
-            if (i < 0 || j < 0 || i > j || i > curr_size || j > curr_size) {
-                return;
-            }
-            if (curr_size == 1) {
-                pop();
-            }
-
-            Elem* current = head;
-            for (int k = 0; k < i ; k++) {
-                current = current->next;
-            }
-
-            Elem* prev_current;
-            if (current == head) {
-                for (int k = i; k <= j; k++) {
-                    prev_current = current;
-                    current = current->next;
-                    delete prev_current;
-                }
-                head = current;
-                return;
-            }
-
-            Elem* elem1 = current->prev;
+        Elem* prev_current;
+        if (current == head) {
             for (int k = i; k <= j; k++) {
                 prev_current = current;
-                current = current->next;
+                current = current->prev;
                 delete prev_current;
             }
-
-            if (head == nullptr) {
-                head = current;
+            head = current;
+            if (head != nullptr) {
+                head->next = nullptr;
             }
-            else if (current == nullptr) {
-                tail = elem1;
-                return;
-            }
-            elem1->next = current;
-            current->prev = elem1;
+            return;
         }
 
-        void print_stack() {
-            Elem* current = head;
-            while (current != nullptr) {
-                std::cout << current->data << " ";
-                current = current->next;
-            }
-            std::cout << std::endl;
+        Elem* elem1 = current->next;
+        for (int k = i; k <= j; k++) {
+            prev_current = current;
+            current = current->prev;
+            delete prev_current;
         }
+
+        if (current != nullptr) {
+            elem1->prev = current;
+            current->next = elem1;
+        } else {
+            elem1->prev = nullptr;
+        }
+    }
+
+    void print_stack() {
+        Elem* current = head;
+        while (current != nullptr) {
+            std::cout << current->data << " ";
+            current = current->prev;
+        }
+        std::cout << std::endl;
+    }
 };
 
 int main() {
     Stack s1;
     Stack s2;
+
+    std::cout << "Вершина стека <-> Elem <-> Низ стека\n" << std::endl;
 
     s1.push(new Elem(nullptr, "A"));
     s1.push(new Elem(nullptr, "B"));
@@ -219,6 +245,8 @@ int main() {
     s2.push(new Elem(nullptr, "D"));
     s2.push(new Elem(nullptr, "E"));
     s2.push(new Elem(nullptr, "F"));
+    s2.push(new Elem(nullptr, "G"));
+    
 
     std::cout << "Стек s1: ";
     s1.print_stack();
@@ -239,7 +267,7 @@ int main() {
     s3.print_stack();
 
     s2.pop();
-    std::cout << "Стек s2 after pop(): ";
+    std::cout << "Стек s2 после pop(): ";
     s2.print_stack();
 
     std::cout << "Поиск элемента 'B' в стеке s1: ";
@@ -254,6 +282,6 @@ int main() {
     std::cout << "Вес элемента 'E' в стеке s2: ";
     std::cout << s2.weight("E") << std::endl;
 
-    std::cout << "Размер стека s1: " << s1.getSize() << std::endl;
+    std::cout << "Размер стека s1: " << s1.size() << std::endl;
 
 }

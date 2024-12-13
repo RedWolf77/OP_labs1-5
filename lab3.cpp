@@ -2,7 +2,6 @@
 // (м) PropustiteMenya(а) который продвигает элемент а на одну позицию вверх по очереди.
 // (A=a1-a2-a3-а4-а5, А.PropustiteMenya(а3), A=a1-a3-a2-а4-а5)
 
-
 #include <iostream>
 
 class Elem {
@@ -16,44 +15,43 @@ class Elem {
 class Queue {
     private:
         Elem* head;
-        Elem* tail;
-        int curr_size;
+
     public:
-        Queue() : head(nullptr), tail(nullptr), curr_size(0) {}
+        Queue() : head(nullptr) {}
+
+        ~Queue() {
+            while (head != nullptr) {
+                pop();
+            }
+        }
 
         bool is_empty() {
-            if (curr_size == 0) {
-                return true;
-            }
-            return false;
+            return head == nullptr;
         }
 
         void push(Elem* elem) {
             Elem* new_elem = new Elem(elem->next, elem->data);
             if (is_empty()) {
                 head = new_elem;
-                tail = new_elem;
+            } else {
+                Elem* current = head;
+                while (current->next != nullptr) {
+                    current = current->next;
+                }
+                current->next = new_elem;
             }
-            else if (!head->next) {
-                head->next = new_elem;
-                tail = new_elem;
-            }
-            else {
-                tail->next = new_elem;
-                tail = new_elem;
-            }
-            curr_size += 1;
         }
 
-        void pop() {
+        void pop(bool output = false) {
             if (is_empty()) {
                 std::cerr << "Очередь пуста, невозможно удалить элемент." << std::endl;
                 return;
             }
             Elem* current = head;
             head = current->next;
-            curr_size -= 1;
-            std::cout << "Извлечен элемент: " << current->data << std::endl;
+            if (output) {
+                std::cout << "Извлечен элемент: " << current->data << std::endl;
+            }
             delete current;
         }
 
@@ -151,7 +149,7 @@ class Queue {
         }
 
         void PropustiteMenya(std::string a) {
-            if (curr_size < 2) {
+            if (head == nullptr || head->next == nullptr) {
                 return;
             }
 
@@ -161,18 +159,13 @@ class Queue {
                 current->next = head;
                 head->next = next_current;
                 head = current;
-                
-            }
-            else {
+            } else {
                 Elem* elem1 = head;
                 Elem* elem2 = elem1->next;
                 Elem* elem3 = elem2->next;
-                
+
                 while (elem3 != nullptr) {
                     if (elem3->data == a) {
-                        if (elem1 == head) {
-                            head->next = elem3;
-                        }
                         Elem* next_elem3 = elem3->next;
                         elem3->next = elem2;
                         elem2->next = next_elem3;
@@ -185,9 +178,22 @@ class Queue {
                 }
             }
         }
+
+        int size() {
+            int size = 0;
+            Elem* current = head;
+            while (current != nullptr) {
+                size++;
+                current = current->next;
+            }
+            return size;
+        }
 };
 
+
 int main() {
+    std::cout << "Начало очереди -> Elem -> Конец очереди\n" << std::endl;
+
     Queue q1;
     q1.push(new Elem(nullptr, "1"));
     q1.push(new Elem(nullptr, "2"));
@@ -195,6 +201,9 @@ int main() {
 
     std::cout << "Очередь q1: ";
     q1.print_queue();
+
+    int size = q1.size();
+    std::cout << "Количество элементов очереди q1: " << size << std::endl;
 
     std::cout << "Поиск элемента 2: ";
     bool inQ = q1.find("2");
@@ -207,9 +216,9 @@ int main() {
 
     std::cout << "Вес элемента 3: " << q1.weight("3") << std::endl;
 
-    q1.pop();
+    q1.pop(true);
 
-    std::cout << "Очередь после удаления: ";
+    std::cout << "Очередь q1 после удаления: ";
     q1.print_queue();
 
     Queue q2;
@@ -223,11 +232,6 @@ int main() {
     std::cout << "Результат q1 + q2: ";
     q3.print_queue();
 
-    q3.PropustiteMenya("3");
-    std::cout << "Очередь после PropustiteMenya(): ";
-    q3.print_queue();
-    std::cout << std::endl;
-
     Queue q4 = q1 * q2;
     std::cout << "Результат q1 * q2: ";
     q4.print_queue();
@@ -235,4 +239,10 @@ int main() {
     Queue q5 = -q1;
     std::cout << "Результат -q1: ";
     q5.print_queue();
+
+    q3.PropustiteMenya("3");
+    std::cout << "Очередь после PropustiteMenya(): ";
+    q3.print_queue();
+    std::cout << std::endl;
+
 }
